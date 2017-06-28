@@ -1,0 +1,10 @@
+{
+  "name": "github-review-labels",
+  "scripts": {
+    "start": "micro index"
+  },
+  "dependencies": {
+    "micro": "latest",
+    "node-fetch": "^1.7.1"
+  }
+}
