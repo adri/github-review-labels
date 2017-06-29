@@ -10,23 +10,30 @@ const labelsMap = {
 
 module.exports = async req => {
     const webhook = await json(req)
+    if (!webhook.pull_request) {
+        console.log(webhook);
+    }
+    const request = (url, options) => fetch(url, Object.assign({}, {headers: { Authorization: `token ${process.env.GITHUB_TOKEN}` }}, options))
 
-    // Fetch reviews
-    const reviews = await fetch(webhook.pull_request.url + '/reviews').then(res => res.json())
+    // Fetch approvals
+    const reviews = await request(webhook.pull_request.url + '/reviews').then(res => res.json())
 
     // Get existing labels
     const labels_url = `${webhook.pull_request.issue_url}/labels`;
-    const labels = await fetch(labels_url)
+    const labels = await request(labels_url)
         .then(res => res.json())
         .then(labels => labels.map(label => label.name))
 
     // Set new labels
-    const newLabels = replaceLabel(labelForReviews(reviews), labels);
+    let newLabels = replaceLabel(labelForReviews(reviews), labels);
 
-    return await fetch(labels_url, {
+    if (approvedCount(reviews) >= 2) {
+        newLabels = newLabels.filter(label !== 'ready for review');
+    }
+
+    return await request(labels_url, {
         method: 'PUT',
-        body: JSON.stringify(newLabels),
-        headers: { Authorization: `token ${process.env.GITHUB_TOKEN}` }
+        body: JSON.stringify(newLabels)
     }).then(res => res.json())
 }
 
