@@ -28,7 +28,7 @@ module.exports = async req => {
     let newLabels = replaceLabel(labelForReviews(reviews), labels);
 
     if (approvedCount(reviews) >= 2) {
-        newLabels = newLabels.filter(label !== 'ready for review');
+        newLabels = newLabels.filter(label => label !== 'ready for review');
     }
 
     return await request(labels_url, {
